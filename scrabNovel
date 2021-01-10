@@ -1,0 +1,48 @@
+import requests
+
+#得到各章节的url
+allUrl='http://www.biquge.se/16141/'
+response = requests.get(url=allUrl)
+response.encoding = 'utf-8'
+#正文
+searchBegin=response.text.find('正文')
+index=[]
+while True:
+    begin=response.text.find('/16141/',searchBegin)
+    if begin==-1:
+        break;
+    end=response.text.find('.html',begin)
+    begin=begin+len('/16141/')
+    searchBegin=end
+    index.append(response.text[begin:end])
+
+
+#得到各章节的内容
+num=1
+for perIndex in index:
+    url='http://www.biquge.se/16141/'+perIndex+'.html'
+    response = requests.get(url=url)
+    response.encoding = 'utf-8'
+
+    #内容
+    begin=response.text.find('<div id=\"content\">')
+    end=response.text.find('/div', begin)
+    begin=begin+25
+    content=response.text[begin:end-1]
+    content=content.replace('<br/>', '\n')
+    content=content.replace('&nbsp;', ' ')
+
+    #标题
+    begin=response.text.find('h1')
+    end=response.text.find('</h1',begin)
+    begin=begin+4
+    title=response.text[begin:end]
+    title=title+'\n\n'
+
+    #将爬取的内容写入xxx.html文件
+    with open('content.txt', 'a+', encoding='utf-8') as f:
+        f.write(title)
+        f.write(content)
+        f.write('\n')
+        print(num)
+        num=num+1
